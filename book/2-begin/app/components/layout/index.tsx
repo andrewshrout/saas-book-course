@@ -12,19 +12,33 @@ const styleGrid = {
   padding: '0px 10px',
 };
 
+const styleGridIsMobile = {
+  width: '100vw',
+  minHeight: '100vh',
+  maxWidth: '100%',
+  padding: '0 0 0 10',
+};
+
 type Props = {
   firstGridItem?: boolean;
   children: React.ReactNode;
+  isMobile?: boolean;
 };
 
 class Layout extends React.Component<Props> {
   public render() {
-    const { firstGridItem, children } = this.props;
+    const { firstGridItem, children, isMobile } = this.props;
 
     const isThemeDark = false;
 
     return (
-      <Grid container direction="row" justify="flex-start" alignItems="stretch" style={styleGrid}>
+      <Grid
+        container
+        direction="row"
+        justify="flex-start"
+        alignItems="stretch"
+        style={isMobile ? styleGridIsMobile : styleGrid}
+      >
         {firstGridItem ? (
           <Grid
             item
@@ -98,6 +112,7 @@ class Layout extends React.Component<Props> {
           </Grid>
         ) : null}
         <Grid item sm={10} xs={12}>
+          {isMobile ? <hr /> : null}
           {children}
         </Grid>
         <Notifier />

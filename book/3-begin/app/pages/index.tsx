@@ -19,7 +19,7 @@ class Index extends React.Component<Props> {
 
     const user = await getUser(req);
 
-    console.log(user);
+    //console.log(user);
 
     return { ...user };
   }
@@ -44,7 +44,7 @@ class Index extends React.Component<Props> {
                 title: 'Are you sure?',
                 message: 'explanatory message',
                 onAnswer: async (answer) => {
-                  console.log(answer);
+                  //console.log(answer);
                   if (!answer) {
                     return;
                   }

@@ -10,26 +10,23 @@ const handle = app.getRequestHandler();
 app.prepare().then(() => {
   const server = express();
 
-  // give all Nextjs's request to Nextjs before anything else
   server.get('/_next/*', (req, res) => {
-    // console.log('next server, page');
+    console.log('next server, page');
     handle(req, res);
   });
 
   server.use(express.json());
 
-  // server.get('/api/v1/public/get-user', (_, res) => {
-  //   res.json({ user: { email: 'team@builderbook.org' } });
-  // });
+  server.get('/api/v1/public/get-user', (req, res) => {
+    console.log(req.body);
+    res.json({ user: { email: 'team@builderbook.org' } });
+  });
 
   server.all('*', (req, res) => {
     handle(req, res);
   });
 
-  server.listen(process.env.PORT_APP, (err) => {
-    if (err) {
-      throw err;
-    }
+  server.listen(process.env.PORT_APP, () => {
     console.log(`> Ready on ${process.env.URL_APP}`);
   });
 });

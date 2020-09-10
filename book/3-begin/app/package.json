@@ -3,8 +3,7 @@
   "version": "1",
   "license": "MIT",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --project tsconfig.server.json --ignore-watch .next --ignore-watch components --ignore-watch lib --ignore-watch pages server/server.ts",
-    "build": "next build && tsc --project tsconfig.server.json",
+    "dev": "ts-node-dev --respawn --transpile-only --project tsconfig.server.json --ignore-watch .next --ignore-watch components --ignore-watch lib --ignore-watch pages server/server.ts",    "build": "next build && tsc --project tsconfig.server.json",
     "lint": "eslint . --ext .ts,.tsx"
   },
   "dependencies": {

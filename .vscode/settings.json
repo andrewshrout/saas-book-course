@@ -21,8 +21,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
-  "eslint.workingDirectories": [
-    { "directory": "./app", "changeProcessCWD": true },
+  "eslint.workingDirectories": [{ "directory": "./app", "changeProcessCWD": true },
     { "directory": "./api", "changeProcessCWD": true },
     { "directory": "./lambda", "changeProcessCWD": true },
     { "directory": "./book/1-end/app", "changeProcessCWD": true },

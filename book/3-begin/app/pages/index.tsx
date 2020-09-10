@@ -11,7 +11,9 @@ import notify from '../lib/notify';
 
 import { getUser } from '../lib/api/public';
 
-class Index extends React.Component {
+type Props = { user: { email: string } };
+
+class Index extends React.Component<Props> {
   public static async getInitialProps(ctx) {
     const { req } = ctx;
 
@@ -42,7 +44,7 @@ class Index extends React.Component {
                 title: 'Are you sure?',
                 message: 'explanatory message',
                 onAnswer: async (answer) => {
-                  //console.log(answer);
+                  console.log(answer);
                   if (!answer) {
                     return;
                   }

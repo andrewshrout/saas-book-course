@@ -17,8 +17,8 @@ app.prepare().then(() => {
 
   server.use(express.json());
 
-  server.get('/api/v1/public/get-user', (req, res) => {
-    console.log(req.body);
+  server.get('/api/v1/public/get-user', (_, res) => {
+    console.log('Express route /get-user');
     res.json({ user: { email: 'team@builderbook.org' } });
   });
 

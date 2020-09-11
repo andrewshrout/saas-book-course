@@ -4,7 +4,14 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only --project tsconfig.server.json server/server.ts",
-    "lint": "eslint . --ext .ts,.tsx"
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "jest"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testPathIgnorePatterns": [
+      "production-server"
+    ]
   },
   "dependencies": {
     "aws-sdk": "^2.610.0",

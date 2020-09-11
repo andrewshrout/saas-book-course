@@ -47,7 +47,6 @@ interface UserModel extends mongoose.Model<UserDocument> {
 
 class UserClass extends mongoose.Model {
   public static async getUserBySlug({ slug }) {
-    console.log('Static Method');
     return this.findOne({ slug }, 'email displayName', { lean: true });
   }
 

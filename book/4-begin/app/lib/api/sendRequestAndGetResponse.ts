@@ -17,11 +17,11 @@ export default async function sendRequestAndGetResponse(path, opts: any = {}) {
     Object.assign({ method: 'POST', credentials: 'include' }, opts, { headers }),
   );
   console.log(`${process.env.URL_API}${path}${qs}`);
-  // console.log(response.status);
-  // console.log(response.statusText);
-
+  //console.log(response.status);
+  //console.log(response.statusText);
   const text = await response.text();
-
+  console.log('text');
+  console.log(text);
   if (response.status >= 400) {
     // console.error(text);
     throw new Error(response.status.toString());
@@ -29,6 +29,8 @@ export default async function sendRequestAndGetResponse(path, opts: any = {}) {
 
   try {
     const data = JSON.parse(text);
+    console.log('try block');
+    console.log(data);
     return data;
   } catch (err) {
     if (err instanceof SyntaxError) {

@@ -16,7 +16,6 @@ export default async function sendRequestAndGetResponse(path, opts: any = {}) {
     `${process.env.URL_API}${path}${qs}`,
     Object.assign({ method: 'POST', credentials: 'include' }, opts, { headers }),
   );
-
   console.log(`${process.env.URL_API}${path}${qs}`);
   // console.log(response.status);
   // console.log(response.statusText);
@@ -30,7 +29,6 @@ export default async function sendRequestAndGetResponse(path, opts: any = {}) {
 
   try {
     const data = JSON.parse(text);
-
     return data;
   } catch (err) {
     if (err instanceof SyntaxError) {

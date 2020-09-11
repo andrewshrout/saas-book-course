@@ -12,10 +12,10 @@ router.post('/get-user-by-slug', async (req, res, next) => {
   console.log('Express route');
   try {
     const { slug } = req.body;
-    console.log(slug)
-    const userDoc = await User.getUserBySlug({ slug });
-    console.log(userDoc)
-    res.json({ userDoc });
+    console.log(slug);
+    const user = await User.getUserBySlug({ slug });
+    console.log(user);
+    res.json({ user });
   } catch (err) {
     console.log(err);
     next(err);

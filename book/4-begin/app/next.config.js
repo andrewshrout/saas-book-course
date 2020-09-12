@@ -6,5 +6,6 @@ module.exports = {
     URL_APP: process.env.URL_APP,
     URL_API: process.env.URL_API,
     PORT_APP: process.env.PORT_APP,
+    BUCKET_FOR_AVATARS: process.env.BUCKET_FOR_AVATARS,
   },
 };

@@ -1,9 +1,12 @@
 import './env';
+import * as mongoSessionStore from 'connect-mongo';
 import * as cors from 'cors';
 import * as express from 'express';
+import * as session from 'express-session';
 import * as mongoose from 'mongoose';
 
 import api from './api';
+import { setupGoogle } from './google-auth';
 
 const options = {
   useNewUrlParser: true,
@@ -19,6 +22,31 @@ const server = express();
 server.use(cors({ origin: process.env.URL_APP, credentials: true }));
 
 server.use(express.json());
+
+const MongoStore = mongoSessionStore(session);
+
+const sessionOptions = {
+  name: process.env.SESSION_NAME,
+  secret: process.env.SESSION_SECRET,
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 14 * 24 * 60 * 60,
+    autoRemove: 'interval',
+    autoRemoveInterval: 1440, // save session 14 days
+  }),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    maxAge: 14 * 24 * 60 * 60 * 1000, // expires in 14 days
+    secure: false,
+  },
+};
+
+const sessionMiddleware = session(sessionOptions);
+server.use(sessionMiddleware);
+
+setupGoogle({ server });
 
 api(server);
 

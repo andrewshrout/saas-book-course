@@ -23,12 +23,15 @@ router.post('/get-user-by-slug', async (req, res, next) => {
 });
 
 router.post('/user/update-profile', async (req, res, next) => {
+  console.log('Express route: /user/update-profile');
   try {
     const { name, avatarUrl } = req.body;
 
     // define userId
 
-    const userId = 'someString';
+    const userId = '5f5a824cefe8a807dc2164bd';
+
+    console.log(name);
 
     const updatedUser = await User.updateProfile({
       userId: userId,

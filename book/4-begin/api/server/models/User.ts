@@ -47,21 +47,22 @@ interface UserModel extends mongoose.Model<UserDocument> {
 
 class UserClass extends mongoose.Model {
   public static async getUserBySlug({ slug }) {
-    return this.findOne({ slug }, 'email displayName', { lean: true });
+    return this.findOne({ slug }, 'email displayName avatarUrl', { lean: true });
   }
 
   public static async updateProfile({ userId, name, avatarUrl }) {
+    console.log('Static method: updateProfile');
     const user = await this.findById(userId, 'slug displayName');
 
     const modifier = { displayName: user.displayName, avatarUrl, slug: user.slug };
-
+    console.log(user.slug);
     if (name !== user.displayName) {
       modifier.displayName = name;
       modifier.slug = name;
     }
 
     return this.findByIdAndUpdate(userId, { $set: modifier }, { new: true, runValidators: true })
-      .select('displayName avatarUrl slug')
+      .select('displayName slug')
       .setOptions({ lean: true });
   }
 }

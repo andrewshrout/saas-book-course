@@ -97,7 +97,9 @@ class Layout extends React.Component<Props> {
                   },
                   {
                     text: 'Log out',
-                    href: '/logout',
+                    href: `${process.env.URL_API}/logout`,
+                    as: `${process.env.URL_API}/logout`,
+                    externalServer: true,
                   },
                 ]}
               >

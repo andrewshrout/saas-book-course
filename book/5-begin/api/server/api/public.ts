@@ -11,11 +11,14 @@ const router = express.Router();
 router.post('/get-user-by-slug', async (req, res, next) => {
   console.log('Express route: /get-user-by-slug');
 
+  //req.session.foo = 'bar';
+
   try {
     const { slug } = req.body;
 
     const user = await User.getUserBySlug({ slug });
-
+    console.log('user');
+    console.log(user);
     res.json({ user });
   } catch (err) {
     next(err);
@@ -40,6 +43,10 @@ router.post('/user/update-profile', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+router.get('/get-user', (req, res) => {
+  res.json({ user: req.user || null });
 });
 
 export default router;

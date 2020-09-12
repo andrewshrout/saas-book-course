@@ -17,7 +17,7 @@ class Index extends React.Component<Props> {
     const slug = 'team-builder-book';
 
     const user = await getUserBySlugApiMethod(slug);
-
+    console.log('user');
     console.log(user);
 
     return { ...user };
@@ -32,6 +32,9 @@ class Index extends React.Component<Props> {
         </Head>
         <div style={{ padding: '0px 30px', fontSize: '15px', height: '100%' }}>
           <p>Content on Index page</p>
+          <Link href="/your-settings" as="/your-settings">
+            <a>Go to Your Settings page</a>
+          </Link>
           <Link href="/csr-page" as="/csr-page">
             <a>Go to CSR page</a>
           </Link>

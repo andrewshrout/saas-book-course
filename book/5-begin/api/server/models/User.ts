@@ -1,4 +1,4 @@
-// import * as _ from 'lodash';
+import * as _ from 'lodash';
 import * as mongoose from 'mongoose';
 
 import { generateSlug } from '../utils/slugify';
@@ -22,6 +22,20 @@ const mongoSchema = new mongoose.Schema({
   },
   displayName: String,
   avatarUrl: String,
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
+  googleToken: {
+    accessToken: String,
+    refreshToken: String,
+  },
+  isSignedupViaGoogle: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 interface UserDocument extends mongoose.Document {
@@ -30,6 +44,9 @@ interface UserDocument extends mongoose.Document {
   email: string;
   displayName: string;
   avatarUrl: string;
+  googleId: string;
+  googleToken: { accessToken: string; refreshToken: string };
+  isSignedupViaGoogle: boolean;
 }
 
 interface UserModel extends mongoose.Model<UserDocument> {
@@ -44,6 +61,22 @@ interface UserModel extends mongoose.Model<UserDocument> {
     name: string;
     avatarUrl: string;
   }): Promise<UserDocument[]>;
+
+  publicFields(): string[];
+
+  signInOrSignUpViaGoogle({
+    googleId,
+    email,
+    displayName,
+    avatarUrl,
+    googleToken,
+  }: {
+    googleId: string;
+    email: string;
+    displayName: string;
+    avatarUrl: string;
+    googleToken: { accessToken?: string; refreshToken?: string };
+  }): Promise<UserDocument>;
 }
 
 class UserClass extends mongoose.Model {
@@ -70,6 +103,60 @@ class UserClass extends mongoose.Model {
     return this.findByIdAndUpdate(userId, { $set: modifier }, { new: true, runValidators: true })
       .select('displayName avatarUrl slug')
       .setOptions({ lean: true });
+  }
+
+  public static publicFields(): string[] {
+    return ['_id', 'id', 'displayName', 'email', 'avatarUrl', 'slug', 'isSignedupViaGoogle'];
+  }
+
+  public static publicFields(): string[] {
+    return ['_id', 'id', 'displayName', 'email', 'avatarUrl', 'slug', 'isSignedupViaGoogle'];
+  }
+
+  public static async signInOrSignUpViaGoogle({
+    googleId,
+    email,
+    displayName,
+    avatarUrl,
+    googleToken,
+  }) {
+    const user = await this.findOne({ email })
+      .select([...this.publicFields(), 'googleId'].join(' '))
+      .setOptions({ lean: true });
+
+    if (user) {
+      if (_.isEmpty(googleToken) && user.googleId) {
+        return user;
+      }
+
+      const modifier = { googleId };
+      if (googleToken.accessToken) {
+        modifier['googleToken.accessToken'] = googleToken.accessToken;
+      }
+
+      if (googleToken.refreshToken) {
+        modifier['googleToken.refreshToken'] = googleToken.refreshToken;
+      }
+
+      await this.updateOne({ email }, { $set: modifier });
+
+      return user;
+    }
+
+    const slug = await generateSlug(this, displayName);
+
+    const newUser = await this.create({
+      createdAt: new Date(),
+      googleId,
+      email,
+      googleToken,
+      displayName,
+      avatarUrl,
+      slug,
+      isSignedupViaGoogle: true,
+    });
+
+    return _.pick(newUser, this.publicFields());
   }
 }
 

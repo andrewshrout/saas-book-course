@@ -17,3 +17,14 @@ export const updateProfileApiMethod = (data) =>
   sendRequestAndGetResponse(`${BASE_PATH}/user/update-profile`, {
     body: JSON.stringify(data),
   });
+
+export const getUserApiMethod = (opts = {}) =>
+  sendRequestAndGetResponse(
+    `${BASE_PATH}/get-user`,
+    Object.assign(
+      {
+        method: 'GET',
+      },
+      opts,
+    ),
+  );

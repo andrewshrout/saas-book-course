@@ -14,3 +14,9 @@ export const uploadFileUsingSignedPutRequestApiMethod = (file, signedRequest, he
     body: file,
     headers,
   });
+
+  
+export const updateProfileApiMethod = (data) =>
+sendRequestAndGetResponse(`${BASE_PATH}/user/update-profile`, {
+  body: JSON.stringify(data),
+});

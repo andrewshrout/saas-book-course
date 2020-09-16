@@ -8,6 +8,8 @@ import * as mongoose from 'mongoose';
 import api from './api';
 import { setupGoogle } from './google-auth';
 
+import { insertTemplates } from './models/EmailTemplate';
+
 const options = {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -16,6 +18,8 @@ const options = {
 };
 
 mongoose.connect(process.env.MONGO_URL, options);
+
+insertTemplates();
 
 const server = express();
 

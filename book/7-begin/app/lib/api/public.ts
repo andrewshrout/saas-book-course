@@ -18,10 +18,6 @@ export const getUserBySlugApiMethod = (slug) =>
     body: JSON.stringify({ slug }),
   });
 
-export const updateProfileApiMethod = (data) =>
-  sendRequestAndGetResponse(`${BASE_PATH}/user/update-profile`, {
-    body: JSON.stringify(data),
-  });
 
 export const emailLoginLinkApiMethod = ({ email }: { email: string }) =>
   sendRequestAndGetResponse('/auth/email-login-link', {

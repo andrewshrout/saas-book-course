@@ -1,9 +1,10 @@
+import { observer } from 'mobx-react';
 import Router from 'next/router';
 import React from 'react';
 
 import * as NProgress from 'nprogress';
 
-import { getUserApiMethod } from '../lib/api/public';
+import { Store } from './store';
 
 Router.events.on('routeChangeStart', () => {
   NProgress.start();
@@ -15,14 +16,11 @@ Router.events.on('routeChangeComplete', () => {
 
 Router.events.on('routeChangeError', () => NProgress.done());
 
-type Props = {
-  user: { email: string; displayName: string; slug: string; avatarUrl: string };
-};
-
 export default function withAuth(Component, { loginRequired = true, logoutRequired = false } = {}) {
-  class WithAuth extends React.Component<Props> {
+  class WithAuth extends React.Component<{ store: Store }> {
     public static async getInitialProps(ctx) {
-      const { req, res } = ctx;
+      console.log('WithAuth.getInitialProps')
+      const { req } = ctx;
 
       let pageComponentProps = {};
 
@@ -30,48 +28,36 @@ export default function withAuth(Component, { loginRequired = true, logoutRequir
         pageComponentProps = await Component.getInitialProps(ctx);
       }
 
-      const headers: any = {};
-      if (req.headers && req.headers.cookie) {
-        headers.cookie = req.headers.cookie;
-      }
+      return {
+        ...pageComponentProps,
+        isServer: !!req,
+      };
+    }
 
-      const { user } = await getUserApiMethod({ headers });
-
-      console.log(user);
+    public componentDidMount() {
+      const { store } = this.props;
+      const user = store.currentUser;
 
       if (loginRequired && !logoutRequired && !user) {
-        if (res) {
-          res.redirect('/login');
-        } else {
-          Router.push('/login');
-        }
+        Router.push('/login');
         return;
       }
 
       let redirectUrl = '/login';
       let asUrl = '/login';
-
       if (user) {
         redirectUrl = `/your-settings`;
         asUrl = `/your-settings`;
       }
 
       if (logoutRequired && user) {
-        if (res) {
-          res.redirect(`${redirectUrl}`);
-        } else {
-          Router.push(redirectUrl, asUrl);
-        }
+        Router.push(redirectUrl, asUrl);
       }
-
-      return {
-        ...pageComponentProps,
-        user,
-      };
     }
 
     public render() {
-      const { user } = this.props;
+      const { store } = this.props;
+      const user = store.currentUser;
 
       if (loginRequired && !logoutRequired && !user) {
         return null;
@@ -85,5 +71,5 @@ export default function withAuth(Component, { loginRequired = true, logoutRequir
     }
   }
 
-  return WithAuth;
+  return observer(WithAuth);
 }

@@ -1,7 +1,6 @@
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { ThemeProvider } from '@material-ui/styles';
 import { Provider } from 'mobx-react';
-import { initializeInstance } from 'mobx/lib/internal';
 import App from 'next/app';
 import React from 'react';
 

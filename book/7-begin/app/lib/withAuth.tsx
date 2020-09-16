@@ -19,7 +19,6 @@ Router.events.on('routeChangeError', () => NProgress.done());
 export default function withAuth(Component, { loginRequired = true, logoutRequired = false } = {}) {
   class WithAuth extends React.Component<{ store: Store }> {
     public static async getInitialProps(ctx) {
-      console.log('WithAuth.getInitialProps')
       const { req } = ctx;
 
       let pageComponentProps = {};

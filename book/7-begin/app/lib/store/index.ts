@@ -1,7 +1,12 @@
 import * as mobx from 'mobx';
-import { decorate, observable, runInAction } from 'mobx';
+import { action, decorate, observable } from 'mobx';
+import { useStaticRendering } from 'mobx-react';
 
 import { User } from './user';
+
+useStaticRendering(typeof window === 'undefined');
+
+mobx.configure({ enforceActions: 'observed' });
 
 class Store {
   public isServer: boolean;
@@ -23,6 +28,10 @@ class Store {
     this.currentUrl = initialState.currentUrl || '';
   }
 
+  public changeCurrentUrl(url: string) {
+    this.currentUrl = url;
+  }
+
   public async setCurrentUser(user) {
     if (user) {
       this.currentUser = new User({ store: this, ...user });
@@ -36,6 +45,8 @@ class Store {
 decorate(Store, {
   currentUser: observable,
   currentUrl: observable,
+
+  changeCurrentUrl: action,
 });
 
 let store: Store = null;
@@ -55,7 +66,7 @@ function initializeStore(initialState = {}) {
     store = _store;
   }
 
-  console.log(_store);
+  // console.log(_store);
 
   return _store;
 }

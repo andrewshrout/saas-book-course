@@ -15,7 +15,7 @@ import {
 
 import notify from '../lib/notify';
 import { resizeImage } from '../lib/resizeImage';
-import { Store } from '../lib/store/index';
+import { Store } from '../lib/store';
 import withAuth from '../lib/withAuth';
 
 type Props = { isMobile: boolean; store: Store };

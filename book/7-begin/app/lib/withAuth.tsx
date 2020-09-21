@@ -34,6 +34,7 @@ export default function withAuth(Component, { loginRequired = true, logoutRequir
     }
 
     public componentDidMount() {
+      console.log('WithAuth.componentDidMount')
       const { store } = this.props;
       const user = store.currentUser;
 

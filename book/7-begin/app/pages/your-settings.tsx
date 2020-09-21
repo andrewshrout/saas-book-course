@@ -127,12 +127,9 @@ class YourSettings extends React.Component<Props, State> {
 
   private onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     const { currentUser } = this.props.store;
-
     const { newName, newAvatarUrl } = this.state;
 
-    console.log(newName);
 
     if (!newName) {
       notify('Name is required');
@@ -144,6 +141,7 @@ class YourSettings extends React.Component<Props, State> {
 
     try {
       await currentUser.updateProfile({ name: newName, avatarUrl: newAvatarUrl });
+    
 
       notify('You successfully updated your profile.');
     } catch (error) {

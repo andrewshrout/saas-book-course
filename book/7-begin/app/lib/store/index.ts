@@ -59,6 +59,7 @@ function initializeStore(initialState = {}) {
 
   // For SSG and SSR always create a new store
   if (typeof window === 'undefined') {
+    console.log(_store)
     return _store;
   }
   // Create the store once in the client
@@ -66,7 +67,7 @@ function initializeStore(initialState = {}) {
     store = _store;
   }
 
-  // console.log(_store);
+   console.log(_store);
 
   return _store;
 }

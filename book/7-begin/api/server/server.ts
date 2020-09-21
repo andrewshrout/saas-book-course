@@ -9,6 +9,8 @@ import api from './api';
 import { setupGoogle } from './google-auth';
 import { setupPasswordless } from './passwordless-auth';
 
+import { stripeWebhookAndCheckoutCallback } from './stripe';
+
 const options = {
   useNewUrlParser: true,
   useCreateIndex: true,
@@ -21,6 +23,9 @@ mongoose.connect(process.env.MONGO_URL, options);
 const server = express();
 
 server.use(cors({ origin: process.env.URL_APP, credentials: true }));
+
+//MUST BE ABOVE EXPRESS.JSON for stripe-invoice-payment-failed
+stripeWebhookAndCheckoutCallback({ server });
 
 server.use(express.json());
 

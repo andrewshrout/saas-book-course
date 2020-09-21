@@ -8,21 +8,10 @@ import NProgress from 'nprogress';
 
 import confirm from '../lib/confirm';
 import notify from '../lib/notify';
-import { getUserBySlugApiMethod } from '../lib/api/public';
 
 type Props = { user: { email: string; displayName: string } };
 
 class Index extends React.Component<Props> {
-  public static async getInitialProps() {
-    const slug = 'team-builder-book';
-
-    const user = await getUserBySlugApiMethod(slug);
-
-    console.log(user);
-
-    return { ...user };
-  }
-
   public render() {
     return (
       <Layout {...this.props}>
@@ -31,9 +20,9 @@ class Index extends React.Component<Props> {
           <meta name="description" content="This is a description of the Index page" />
         </Head>
         <div style={{ padding: '0px 30px', fontSize: '15px', height: '100%' }}>
-          <p>Content on Index page</p>
+          <p>This is a base page for storing our maps</p>
           <Link href="/your-settings" as="/your-settings">
-            <a>Go to Your Settings page</a>
+            <a>This is a link tag to Your Settings page</a>
           </Link>
           <p />
           <Button
@@ -64,8 +53,6 @@ class Index extends React.Component<Props> {
           >
             Test Confirmer and Notifier
           </Button>
-          <p>Your email: {this.props.user.email}</p>
-          <p>Your name: {this.props.user.displayName}</p>
         </div>
       </Layout>
     );

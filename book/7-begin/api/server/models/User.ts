@@ -1,10 +1,17 @@
+/* eslint-disable @typescript-eslint/camelcase */
+
 import * as _ from 'lodash';
 import * as mongoose from 'mongoose';
+import Stripe from 'stripe';
+
+import { cancelSubscription } from '../stripe';
 
 import sendEmail from '../aws-ses';
 import { addToMailchimp } from '../mailchimp';
 import { generateSlug } from '../utils/slugify';
 import getEmailTemplate from './EmailTemplate';
+
+import { getListOfInvoices } from '../stripe';
 
 mongoose.set('useFindAndModify', false);
 
@@ -39,6 +46,69 @@ const mongoSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
+  darkTheme: {
+    type: Boolean,
+  },
+  stripeSubscription: {
+    id: String,
+    object: String,
+    application_fee_percent: Number,
+    billing: String,
+    cancel_at_period_end: Boolean,
+    billing_cycle_anchor: Number,
+    canceled_at: Number,
+    created: Number,
+  },
+  isSubscriptionActive: {
+    type: Boolean,
+    default: false,
+  },
+  isPaymentFailed: {
+    type: Boolean,
+    default: false,
+  },
+  stripeCustomer: {
+    id: String,
+    object: String,
+    created: Number,
+    currency: String,
+    default_source: String,
+    description: String,
+  },
+  stripeCard: {
+    id: String,
+    object: String,
+    brand: String,
+    funding: String,
+    country: String,
+    last4: String,
+    exp_month: Number,
+    exp_year: Number,
+  },
+  hasCardInformation: {
+    type: Boolean,
+    default: false,
+  },
+  stripeListOfInvoices: {
+    object: String,
+    has_more: Boolean,
+    data: [
+      {
+        id: String,
+        object: String,
+        amount_paid: Number,
+        created: Number,
+        customer: String,
+        subscription: String,
+        hosted_invoice_url: String,
+        billing: String,
+        paid: Boolean,
+        number: String,
+        teamId: String,
+        teamName: String,
+      },
+    ],
+  },
 });
 
 export interface UserDocument extends mongoose.Document {
@@ -50,10 +120,62 @@ export interface UserDocument extends mongoose.Document {
   googleId: string;
   googleToken: { accessToken: string; refreshToken: string };
   isSignedupViaGoogle: boolean;
+  darkTheme: boolean;
+  stripeSubscription: {
+    id: string;
+    object: string;
+    application_fee_percent: number;
+    billing: string;
+    cancel_at_period_end: boolean;
+    billing_cycle_anchor: number;
+    canceled_at: number;
+    created: number;
+  };
+  isSubscriptionActive: boolean;
+  isPaymentFailed: boolean;
+  stripeCustomer: {
+    id: string;
+    default_source: string;
+    created: number;
+    object: string;
+    description: string;
+  };
+  stripeCard: {
+    id: string;
+    object: string;
+    brand: string;
+    country: string;
+    last4: string;
+    exp_month: number;
+    exp_year: number;
+    funding: string;
+  };
+  hasCardInformation: boolean;
+  stripeListOfInvoices: {
+    object: string;
+    has_more: boolean;
+    data: [
+      {
+        id: string;
+        object: string;
+        amount_paid: number;
+        date: number;
+        customer: string;
+        subscription: string;
+        hosted_invoice_url: string;
+        billing: string;
+        paid: boolean;
+        number: string;
+        teamId: string;
+        teamName: string;
+      },
+    ];
+  };
 }
 
 interface UserModel extends mongoose.Model<UserDocument> {
   getUserBySlug({ slug }: { slug: string }): Promise<UserDocument>;
+  toggleTheme({ userId, darkTheme }: { userId: string; darkTheme: boolean }): Promise<void>;
 
   updateProfile({
     userId,
@@ -88,6 +210,40 @@ interface UserModel extends mongoose.Model<UserDocument> {
     uid: string;
     email: string;
   }): Promise<UserDocument>;
+
+  subscribeUser({
+    session,
+    user,
+  }: {
+    session: Stripe.Checkout.Session;
+    user: UserDocument;
+  }): Promise<void>;
+
+  cancelSubscription({ uid }: { uid: string }): Promise<UserDocument>;
+
+  cancelSubscriptionAfterFailedPayment({
+    subscriptionId,
+  }: {
+    subscriptionId: string;
+  }): Promise<UserDocument>;
+
+  saveStripeCustomerAndCard({
+    user,
+    session,
+  }: {
+    session: Stripe.Checkout.Session;
+    user: UserDocument;
+  }): Promise<void>;
+
+  changeStripeCard({
+    session,
+    user,
+  }: {
+    session: Stripe.Checkout.Session;
+    user: UserDocument;
+  }): Promise<void>;
+
+  getListOfInvoicesForCustomer({ userId }: { userId: string }): Promise<UserDocument>;
 }
 
 class UserClass extends mongoose.Model {
@@ -104,7 +260,7 @@ class UserClass extends mongoose.Model {
 
     const modifier = { displayName: user.displayName, avatarUrl, slug: user.slug };
 
-    console.log(user.slug);
+    //(user.slug);
 
     if (name !== user.displayName) {
       modifier.displayName = name;
@@ -117,7 +273,19 @@ class UserClass extends mongoose.Model {
   }
 
   public static publicFields(): string[] {
-    return ['_id', 'id', 'displayName', 'email', 'avatarUrl', 'slug', 'isSignedupViaGoogle'];
+    return [
+      '_id',
+      'id',
+      'displayName',
+      'email',
+      'avatarUrl',
+      'slug',
+      'isSignedupViaGoogle',
+      'darkTheme',
+      'stripeCard',
+      'hasCardInformation',
+      'stripeListOfInvoices',
+    ];
   }
 
   public static async signInOrSignUpViaGoogle({
@@ -231,6 +399,161 @@ class UserClass extends mongoose.Model {
     }
 
     return _.pick(newUser, this.publicFields());
+  }
+
+  public static toggleTheme({ userId, darkTheme }) {
+    console.log('This came in');
+    console.log(darkTheme);
+    return this.updateOne({ _id: userId }, { darkTheme: !!darkTheme });
+  }
+
+  public static async subscribeUser({
+    session,
+    user,
+  }: {
+    session: Stripe.Checkout.Session;
+    user: UserDocument;
+  }) {
+    if (!session.subscription) {
+      throw new Error('Not subscribed');
+    }
+
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    if (user.isSubscriptionActive) {
+      throw new Error('Team is already subscribed.');
+    }
+
+    const stripeSubscription = session.subscription as Stripe.Subscription;
+    if (stripeSubscription.canceled_at) {
+      throw new Error('Unsubscribed');
+    }
+
+    await this.updateOne({ _id: user._id }, { stripeSubscription, isSubscriptionActive: true });
+  }
+
+  public static async cancelSubscription({ uid }) {
+    const user = await this.findById(uid).select('uId isSubscriptionActive stripeSubscription');
+
+    if (!user.isSubscriptionActive) {
+      throw new Error('User is already unsubscribed.');
+    }
+
+    //Add stripe here to cancel subscription?
+    const cancelledSubscriptionObj = await cancelSubscription({
+      subscriptionId: user.stripeSubscription.id,
+    });
+
+    return this.findByIdAndUpdate(
+      uid,
+      {
+        stripeSubscription: cancelledSubscriptionObj,
+        isSubscriptionActive: false,
+      },
+      { new: true, runValidators: true },
+    )
+      .select('isSubscriptionActive stripeSubscription')
+      .setOptions({ lean: true });
+  }
+
+  public static async cancelSubscriptionAfterFailedPayment({ subscriptionId }) {
+    const user: any = await this.find({ 'stripeSubscription.id': subscriptionId })
+      .select('uid isSubscriptionActive stripeSubscription isPaymentFailed')
+      .setOptions({ lean: true });
+    if (!user.isSubscriptionActive) {
+      throw new Error('User is already unsubscribed.');
+    }
+    if (user.isPaymentFailed) {
+      throw new Error('User is already unsubscribed after failed payment.');
+    }
+    const cancelledSubscriptionObj = await cancelSubscription({
+      subscriptionId,
+    });
+    return this.findByIdAndUpdate(
+      user._id,
+      {
+        stripeSubscription: cancelledSubscriptionObj,
+        isSubscriptionActive: false,
+        isPaymentFailed: true,
+      },
+      { new: true, runValidators: true },
+    )
+      .select('isSubscriptionActive stripeSubscription isPaymentFailed')
+      .setOptions({ lean: true });
+  }
+  public static async saveStripeCustomerAndCard({
+    user,
+    session,
+  }: {
+    session: Stripe.Checkout.Session;
+    user: UserDocument;
+  }) {
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    const stripeSubscription = session.subscription as Stripe.Subscription;
+
+    const stripeCard =
+      (stripeSubscription.default_payment_method &&
+        (stripeSubscription.default_payment_method as Stripe.PaymentMethod).card) ||
+      undefined;
+
+    const hasCardInformation = !!stripeCard;
+
+    await this.updateOne(
+      { _id: user._id },
+      {
+        stripeCustomer: session.customer,
+        stripeCard,
+        hasCardInformation,
+      },
+    );
+  }
+  public static async changeStripeCard({
+    session,
+    user,
+  }: {
+    session: Stripe.Checkout.Session;
+    user: UserDocument;
+  }): Promise<void> {
+    if (!user) {
+      throw new Error('User not found.');
+    }
+
+    const si: Stripe.SetupIntent = session.setup_intent as Stripe.SetupIntent;
+    const pm: Stripe.PaymentMethod = si.payment_method as Stripe.PaymentMethod;
+
+    if (!pm.card) {
+      throw new Error('No card found.');
+    }
+    await this.updateOne({ _id: user._id }, { stripeCard: pm.card, hasCardInformation: true });
+  }
+
+  public static async getListOfInvoicesForCustomer({ userId }) {
+    const user = await this.findById(userId, 'stripeCustomer');
+
+    if (!user.stripeCustomer.id) {
+      throw new Error('You are not a customer and you have no payment history.');
+    }
+
+    const newListOfInvoices = await getListOfInvoices({
+      customerId: user.stripeCustomer.id,
+    });
+
+    if (newListOfInvoices.data === undefined || newListOfInvoices.data.length === 0) {
+      throw new Error('You are a customer. But there is no payment history.');
+    }
+
+    const modifier = {
+      stripeListOfInvoices: newListOfInvoices,
+    };
+
+    return this.findByIdAndUpdate(userId, { $set: modifier }, { new: true, runValidators: true })
+      .select('stripeListOfInvoices')
+      .setOptions({ lean: true });
   }
 }
 

@@ -22,7 +22,7 @@ async function signRequestForUpload({ fileName, fileType, prefix, bucket }) {
     ACL: acl,
   };
 
-  console.log(prefix);
+  //console.log(prefix);
 
   const s3 = new aws.S3({
     apiVersion: 'latest',

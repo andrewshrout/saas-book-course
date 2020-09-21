@@ -73,10 +73,12 @@ class MyApp extends App<{ isMobile: boolean }> {
     const store = this.store;
 
     return (
-      <ThemeProvider theme={false ? themeDark : themeLight}>
+      <ThemeProvider
+      theme={store.currentUser && store.currentUser.darkTheme ? themeDark : themeLight}
+      >
         <CssBaseline />
         <Provider store={store}>
-        <Component {...pageProps} />
+        <Component {...pageProps} store={store} />
         </Provider>
       </ThemeProvider>
     );

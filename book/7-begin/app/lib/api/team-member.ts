@@ -15,8 +15,27 @@ export const uploadFileUsingSignedPutRequestApiMethod = (file, signedRequest, he
     headers,
   });
 
-  
 export const updateProfileApiMethod = (data) =>
 sendRequestAndGetResponse(`${BASE_PATH}/user/update-profile`, {
   body: JSON.stringify(data),
 });
+
+export const toggleThemeApiMethod = (data) =>
+  sendRequestAndGetResponse(`${BASE_PATH}/user/toggle-theme`, {
+    body: JSON.stringify(data),
+  });
+
+  export const fetchCheckoutSessionApiMethod = ({ mode, uid }: { mode: string; uid: string }) =>
+  sendRequestAndGetResponse(`${BASE_PATH}/stripe/fetch-checkout-session`, {
+    body: JSON.stringify({ mode, uid }),
+  });
+
+export const cancelSubscriptionApiMethod = ({ uid }: { uid: string }) =>
+  sendRequestAndGetResponse(`${BASE_PATH}/cancel-subscription`, {
+    body: JSON.stringify({ uid }),
+  });
+
+export const getListOfInvoicesApiMethod = () =>
+  sendRequestAndGetResponse(`${BASE_PATH}/get-list-of-invoices-for-customer`, {
+    method: 'GET',
+  });

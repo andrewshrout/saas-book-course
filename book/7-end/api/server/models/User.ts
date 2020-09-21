@@ -272,6 +272,8 @@ class UserClass extends mongoose.Model {
   }
 
   public static toggleTheme({ userId, darkTheme }) {
+    console.log(userId);
+    console.log(darkTheme);
     return this.updateOne({ _id: userId }, { darkTheme: !!darkTheme });
   }
 

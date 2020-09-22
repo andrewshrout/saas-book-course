@@ -1,6 +1,11 @@
 import { action, decorate, observable, runInAction } from 'mobx';
 
-import { toggleThemeApiMethod, updateProfileApiMethod, getListOfInvoicesApiMethod } from '../api/team-member';
+import {
+  toggleThemeApiMethod,
+  updateProfileApiMethod,
+  getListOfInvoicesApiMethod,
+  cancelSubscriptionApiMethod,
+} from '../api/team-member';
 import { Store } from './index';
 
 class User {
@@ -27,7 +32,7 @@ class User {
   };
   public isSubscriptionActive: boolean;
   public isPaymentFailed: boolean;
-  
+
   public stripeCard: {
     brand: string;
     funding: string;
@@ -47,8 +52,7 @@ class User {
       },
     ];
     has_more: boolean;
-};
-
+  };
 
   constructor(params) {
     this.store = params.store;
@@ -72,12 +76,12 @@ class User {
   }
 
   public async updateProfile({ name, avatarUrl }: { name: string; avatarUrl: string }) {
-    console.log(name)
+    console.log(name);
     const { updatedUser } = await updateProfileApiMethod({
       name,
       avatarUrl,
     });
-    console.log( updatedUser )
+    console.log(updatedUser);
     runInAction(() => {
       this.displayName = updatedUser.displayName;
       this.avatarUrl = updatedUser.avatarUrl;
@@ -94,8 +98,8 @@ class User {
   }
   //public async checkIfMustBeCustomer() {
   //  let ifMustBeCustomerOnClient: boolean;
-  
-    /*
+
+  /*
     This is a sample example. Insert our logic here, return false so that the value on the page does not render / return / load.
     If it returns false, use notify to alert the user to their error.
     if (this && this.memberIds.length < 2) {
@@ -122,9 +126,21 @@ class User {
     }
   }
 
+  public async cancelSubscription({ uid }: { uid: string }) {
+    try {
+      const { isSubscriptionActive } = await cancelSubscriptionApiMethod({ uid });
+
+      runInAction(() => {
+        this.isSubscriptionActive = isSubscriptionActive;
+      });
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+
   //need cancel subscription and all that.
 }
-
 
 decorate(User, {
   slug: observable,
@@ -132,7 +148,6 @@ decorate(User, {
   displayName: observable,
   avatarUrl: observable,
   darkTheme: observable,
-
 
   updateProfile: action,
   toggleTheme: action,

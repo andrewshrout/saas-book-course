@@ -12,13 +12,16 @@ import { Store } from '../lib/store';
 import withAuth from '../lib/withAuth';
 import { fetchCheckoutSessionApiMethod } from '../lib/api/team-member';
 
-const dev = process.env.NODE_ENV && process.env.NODE_ENV !== 'production';
+const dev = process.env && process.env.NODE_ENV && process.env.NODE_ENV !== 'production';
 
-const stripePromise = await loadStripe(dev ? process.env.STRIPE_TEST_PUBLISHABLEKEY : process.env.STRIPE_LIVE_PUBLISHABLEKEY);
+const stripePromise = loadStripe(
+  dev ? process.env.STRIPE_TEST_PUBLISHABLEKEY : process.env.STRIPE_LIVE_PUBLISHABLEKEY,
+);
 
 type Props = {
   store: Store;
   isMobile: boolean;
+  teamSlug: string;
   redirectMessage?: string;
 };
 
@@ -29,11 +32,12 @@ class Billing extends React.Component<Props, State> {
 
   public render() {
     const { store, isMobile } = this.props;
-    //const isTeamLeader = currentTeam && currentUser && currentUser._id === currentTeam.teamLeaderId;
+    const { currentUser } = store;
+
     return (
       <Layout {...this.props}>
         <Head>
-          <title>Your Billing</title>
+          <title>{currentUser.displayName}'s Billing</title>
         </Head>
         <div style={{ padding: isMobile ? '0px' : '0px 30px' }}>
           <h3>Your Billing</h3>
@@ -55,6 +59,7 @@ class Billing extends React.Component<Props, State> {
           >
             Show payment history
           </Button>
+          <p />
           {this.renderInvoices()}
           <p />
           <br />
@@ -136,8 +141,13 @@ class Billing extends React.Component<Props, State> {
             </p>
           </span>
           <p />
-          <Button variant="outlined" color="primary" onClick={this.cancelSubscriptionOnClick}>
-            Unsubscribe Team
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={this.cancelSubscriptionOnClick}
+            disabled={this.state.disabled}
+          >
+            Unsubscribe User
           </Button>
           <br />
         </React.Fragment>
@@ -148,10 +158,15 @@ class Billing extends React.Component<Props, State> {
   private handleCheckoutClick = async (mode: 'subscription' | 'setup') => {
     try {
       const { currentUser } = this.props.store;
+
+      NProgress.start();
+      this.setState({ disabled: true });
+
       const { sessionId } = await fetchCheckoutSessionApiMethod({ mode, uid: currentUser._id });
 
       // When the customer clicks on the button, redirect them to Checkout.
-      const { error } = await stripePromise.redirectToCheckout({ sessionId });
+      const stripe = await stripePromise;
+      const { error } = await stripe.redirectToCheckout({ sessionId });
 
       if (error) {
         notify(error);
@@ -160,6 +175,9 @@ class Billing extends React.Component<Props, State> {
     } catch (err) {
       notify(err);
       console.error(err);
+    } finally {
+      this.setState({ disabled: false });
+      NProgress.done();
     }
   };
 
@@ -170,7 +188,7 @@ class Billing extends React.Component<Props, State> {
     this.setState({ disabled: true });
 
     try {
-      await currentUser.cancelSubscription({ userId: currentUser._id });
+      await currentUser.cancelSubscription({ uid: currentUser._id });
       notify('Success!');
     } catch (err) {
       notify(err);
@@ -203,6 +221,7 @@ class Billing extends React.Component<Props, State> {
             variant="outlined"
             color="primary"
             onClick={() => this.handleCheckoutClick('setup')}
+            disabled={this.state.disabled}
           >
             Update card
           </Button>
@@ -229,8 +248,7 @@ class Billing extends React.Component<Props, State> {
               <p>Your history of payments:</p>
               <li>
                 ${invoice.amount_paid / 100} was paid on{' '}
-                {moment(invoice.created * 1000).format('MMM Do YYYY')} for Team '{invoice.teamName}'
-                -{' '}
+                {moment(invoice.created * 1000).format('MMM Do YYYY')} for '{invoice.teamName}' -{' '}
                 <a href={invoice.hosted_invoice_url} target="_blank" rel="noopener noreferrer">
                   See invoice
                 </a>

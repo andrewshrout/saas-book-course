@@ -28,7 +28,6 @@ module.exports = {
     "react/no-unescaped-entities": "off",
     "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
     "@typescript-eslint/no-explicit-any": "off",
- },
   },
   plugins: ["prettier", "react"]
 };

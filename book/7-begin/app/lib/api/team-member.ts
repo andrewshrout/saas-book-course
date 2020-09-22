@@ -16,16 +16,16 @@ export const uploadFileUsingSignedPutRequestApiMethod = (file, signedRequest, he
   });
 
 export const updateProfileApiMethod = (data) =>
-sendRequestAndGetResponse(`${BASE_PATH}/user/update-profile`, {
-  body: JSON.stringify(data),
-});
+  sendRequestAndGetResponse(`${BASE_PATH}/user/update-profile`, {
+    body: JSON.stringify(data),
+  });
 
 export const toggleThemeApiMethod = (data) =>
   sendRequestAndGetResponse(`${BASE_PATH}/user/toggle-theme`, {
     body: JSON.stringify(data),
   });
 
-  export const fetchCheckoutSessionApiMethod = ({ mode, uid }: { mode: string; uid: string }) =>
+export const fetchCheckoutSessionApiMethod = ({ mode, uid }: { mode: string; uid: string }) =>
   sendRequestAndGetResponse(`${BASE_PATH}/stripe/fetch-checkout-session`, {
     body: JSON.stringify({ mode, uid }),
   });

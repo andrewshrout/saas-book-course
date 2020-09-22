@@ -14,13 +14,7 @@ class Store {
   public currentUser?: User = null;
   public currentUrl = '';
 
-  constructor({
-    initialState = {},
-    isServer,
-  }: {
-    initialState?: any;
-    isServer: boolean;
-  }) {
+  constructor({ initialState = {}, isServer }: { initialState?: any; isServer: boolean }) {
     this.isServer = !!isServer;
 
     this.setCurrentUser(initialState.user);
@@ -35,7 +29,6 @@ class Store {
   public async setCurrentUser(user) {
     if (user) {
       this.currentUser = new User({ store: this, ...user });
-
     } else {
       this.currentUser = null;
     }
@@ -59,7 +52,7 @@ function initializeStore(initialState = {}) {
 
   // For SSG and SSR always create a new store
   if (typeof window === 'undefined') {
-    console.log(_store)
+    console.log(_store);
     return _store;
   }
   // Create the store once in the client
@@ -67,7 +60,7 @@ function initializeStore(initialState = {}) {
     store = _store;
   }
 
-   console.log(_store);
+  console.log(_store);
 
   return _store;
 }

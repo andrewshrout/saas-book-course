@@ -22,13 +22,10 @@ app.prepare().then(() => {
   //   res.json({ user: { email: 'team@builderbook.org' } });
   // });
 
-  
-  server.get('/user/:slug/billing', (req, res) => {
-    const { slug } = req.params;
-    app.render(req, res, '/billing', { slug, ...(req.query || {}) });
+  server.get('/user/:displayName/billing', (req, res) => {
+    const { displayName } = req.params;
+    app.render(req, res, '/billing', { displayName, ...(req.query || {}) });
   });
-  
-  
 
   server.all('*', (req, res) => {
     handle(req, res);

@@ -4,12 +4,10 @@ import { Provider } from 'mobx-react';
 import App from 'next/app';
 import React from 'react';
 
-
 import { isMobile } from '../lib/isMobile';
 import { themeDark, themeLight } from '../lib/theme';
 import { getUserApiMethod } from '../lib/api/public';
 import { getStore, initializeStore, Store } from '../lib/store';
-
 
 class MyApp extends App<{ isMobile: boolean }> {
   public static async getInitialProps({ Component, ctx }) {
@@ -40,7 +38,7 @@ class MyApp extends App<{ isMobile: boolean }> {
 
     let userObj = null;
     try {
-      const { user } = await getUserApiMethod({ headers});
+      const { user } = await getUserApiMethod({ headers });
       userObj = user;
     } catch (error) {
       console.log(error);
@@ -63,10 +61,10 @@ class MyApp extends App<{ isMobile: boolean }> {
   private store: Store;
 
   constructor(props) {
-    console.log('MyApp.constructor')
+    console.log('MyApp.constructor');
     super(props);
 
-    this.store = initializeStore(props.initialState)
+    this.store = initializeStore(props.initialState);
   }
   public render() {
     const { Component, pageProps } = this.props;
@@ -74,11 +72,11 @@ class MyApp extends App<{ isMobile: boolean }> {
 
     return (
       <ThemeProvider
-      theme={store.currentUser && store.currentUser.darkTheme ? themeDark : themeLight}
+        theme={store.currentUser && store.currentUser.darkTheme ? themeDark : themeLight}
       >
         <CssBaseline />
         <Provider store={store}>
-        <Component {...pageProps} store={store} />
+          <Component {...pageProps} store={store} />
         </Provider>
       </ThemeProvider>
     );

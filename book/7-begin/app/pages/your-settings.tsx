@@ -53,11 +53,7 @@ class YourSettings extends React.Component<Props, State> {
           <h3>Your Settings</h3>
           <h4 style={{ marginTop: '40px' }}>Your account</h4>
           <div>
-            <i
-              className="material-icons"
-              color="action"
-              style={{ verticalAlign: 'text-bottom' }}
-            >
+            <i className="material-icons" color="action" style={{ verticalAlign: 'text-bottom' }}>
               done
             </i>{' '}
             {currentUser.isSignedupViaGoogle
@@ -130,7 +126,6 @@ class YourSettings extends React.Component<Props, State> {
     const { currentUser } = this.props.store;
     const { newName, newAvatarUrl } = this.state;
 
-
     if (!newName) {
       notify('Name is required');
       return;
@@ -141,7 +136,6 @@ class YourSettings extends React.Component<Props, State> {
 
     try {
       await currentUser.updateProfile({ name: newName, avatarUrl: newAvatarUrl });
-    
 
       notify('You successfully updated your profile.');
     } catch (error) {

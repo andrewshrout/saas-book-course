@@ -68,8 +68,6 @@ class User {
     this.isSubscriptionActive = params.isSubscriptionActive;
     this.isPaymentFailed = params.isPaymentFailed;
 
-    this.store = params.store;
-
     this.stripeCard = params.stripeCard;
     this.hasCardInformation = params.hasCardInformation;
     this.stripeListOfInvoices = params.stripeListOfInvoices;
@@ -138,8 +136,6 @@ class User {
       throw error;
     }
   }
-
-  //need cancel subscription and all that.
 }
 
 decorate(User, {
@@ -155,6 +151,10 @@ decorate(User, {
 
   stripeCard: observable,
   stripeListOfInvoices: observable,
+
+  stripeSubscription: observable,
+  isSubscriptionActive: observable,
+  isPaymentFailed: observable,
 });
 
 export { User };

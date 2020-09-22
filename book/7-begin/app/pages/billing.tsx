@@ -100,8 +100,8 @@ class Billing extends React.Component<Props, State> {
           </Button>
           <p />
           <p>
-            Team was automatically unsubscribed due to failed payment. You will be prompt to update
-            card information if you choose to re-subscribe Team.
+            You were automatically unsubscribed due to failed payment. You will be prompt to update
+            card information if you choose to re-subscribe.
           </p>
         </>
       );

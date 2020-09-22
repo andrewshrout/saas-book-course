@@ -77,6 +77,7 @@ function getListOfInvoices({ customerId }) {
   return stripeInstance.invoices.list({ customer: customerId, limit: 100 });
 }
 
+//WEBHOOKS HERE
 function stripeWebhookAndCheckoutCallback({ server }) {
   server.post(
     '/api/v1/public/stripe-invoice-payment-failed',
@@ -116,7 +117,7 @@ function stripeWebhookAndCheckoutCallback({ server }) {
 
   server.get('/stripe/checkout-completed/:sessionId', async (req, res) => {
     const { sessionId } = req.params;
-
+    console.log('Session completed');
     const session = await retrieveSession({ sessionId });
     if (!session || !session.metadata || !session.metadata.userId) {
       throw new Error('Wrong session.');
@@ -126,28 +127,33 @@ function stripeWebhookAndCheckoutCallback({ server }) {
       session.metadata.userId,
       '_id stripeCustomer email displayName isSubscriptionActive stripeSubscription',
     ).setOptions({ lean: true });
-
+    console.log('User');
+    console.log(user);
     if (!user) {
       throw new Error('User not found.');
     }
 
     try {
       if (session.mode === 'setup' && session.setup_intent) {
+        console.log('Setup!');
         const si: Stripe.SetupIntent = session.setup_intent as Stripe.SetupIntent;
         const pm: Stripe.PaymentMethod = si.payment_method as Stripe.PaymentMethod;
 
         if (user.stripeCustomer) {
+          console.log('Updating stripe');
           await updateCustomer(user.stripeCustomer.id, {
             invoice_settings: { default_payment_method: pm.id },
           });
         }
 
         if (user.stripeSubscription) {
+          console.log('Updating user');
           await updateSubscription(user.stripeSubscription.id, { default_payment_method: pm.id });
         }
 
         await User.changeStripeCard({ session, user });
       } else if (session.mode === 'subscription') {
+        console.log('Subscription mode.');
         await User.saveStripeCustomerAndCard({ session, user });
         //add to user and change to "subscribe user"
         await User.subscribeUser({ session, user });
@@ -156,12 +162,12 @@ function stripeWebhookAndCheckoutCallback({ server }) {
         throw new Error('Wrong session.');
       }
 
-      res.redirect(`${process.env.URL_APP}/user/${user.slug}/billing`);
+      res.redirect(`${process.env.URL_APP}/user/${user.displayName}/billing`);
     } catch (err) {
       console.error(err);
 
       res.redirect(
-        `${process.env.URL_APP}/user/${user.slug}/billing?redirectMessage=${err.message ||
+        `${process.env.URL_APP}/user/${user.displayName}/billing?redirectMessage=${err.message ||
           err.toString()}`,
       );
     }

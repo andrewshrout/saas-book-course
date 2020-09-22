@@ -402,8 +402,6 @@ class UserClass extends mongoose.Model {
   }
 
   public static toggleTheme({ userId, darkTheme }) {
-    console.log('This came in');
-    console.log(darkTheme);
     return this.updateOne({ _id: userId }, { darkTheme: !!darkTheme });
   }
 
@@ -430,7 +428,7 @@ class UserClass extends mongoose.Model {
     if (stripeSubscription.canceled_at) {
       throw new Error('Unsubscribed');
     }
-
+    console.log('Updating user');
     await this.updateOne({ _id: user._id }, { stripeSubscription, isSubscriptionActive: true });
   }
 

@@ -127,15 +127,43 @@ class User {
   public async cancelSubscription({ uid }: { uid: string }) {
     try {
       const { isSubscriptionActive } = await cancelSubscriptionApiMethod({ uid });
-
+      console.log('My subscription is now...');
+      console.log(isSubscriptionActive);
       runInAction(() => {
         this.isSubscriptionActive = isSubscriptionActive;
+        console.log('and now it is');
+        console.log(this.isSubscriptionActive);
       });
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
+
+  /*
+  
+  public async subscribeUser(mode: 'subscription' | 'setup', stripePromise: any) {
+    //call the api method, return sessionId, redirect, then run in action updating our store.
+    //alternatively we just make a small function that fires BEFORE we reload the page and summon our local state with a get user from slug
+    try {
+      const uid = this._id
+      const { sessionId, isSubscriptionActive, stripeSubscription } = await fetchCheckoutSessionApiMethod({ mode, uid });
+
+      // When the customer clicks on the button, redirect them to Checkout.
+      const stripe = await stripePromise;
+      const { error } = await stripe.redirectToCheckout({ sessionId });
+
+      runInAction(() => {
+        this.isSubscriptionActive = isSubscriptionActive;
+        this.stripeSubscription = stripeSubscription
+      });
+
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  }
+  */
 }
 
 decorate(User, {

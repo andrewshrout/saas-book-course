@@ -127,7 +127,7 @@ function stripeWebhookAndCheckoutCallback({ server }) {
       session.metadata.userId,
       '_id stripeCustomer email displayName isSubscriptionActive stripeSubscription',
     ).setOptions({ lean: true });
-    console.log('User');
+    console.log('User checkout completed');
     console.log(user);
     if (!user) {
       throw new Error('User not found.');
@@ -147,13 +147,13 @@ function stripeWebhookAndCheckoutCallback({ server }) {
         }
 
         if (user.stripeSubscription) {
-          console.log('Updating user');
+          console.log('Updating user subscription, it already exists.');
           await updateSubscription(user.stripeSubscription.id, { default_payment_method: pm.id });
         }
 
         await User.changeStripeCard({ session, user });
       } else if (session.mode === 'subscription') {
-        console.log('Subscription mode.');
+        console.log('New subscription mode.');
         await User.saveStripeCustomerAndCard({ session, user });
         //add to user and change to "subscribe user"
         await User.subscribeUser({ session, user });

@@ -285,6 +285,9 @@ class UserClass extends mongoose.Model {
       'stripeCard',
       'hasCardInformation',
       'stripeListOfInvoices',
+      'stripeSubscription',
+      'isPaymentFailed',
+      'isSubscriptionActive',
     ];
   }
 
@@ -434,7 +437,8 @@ class UserClass extends mongoose.Model {
 
   public static async cancelSubscription({ uid }) {
     const user = await this.findById(uid).select('uId isSubscriptionActive stripeSubscription');
-
+    console.log('User');
+    console.log(user);
     if (!user.isSubscriptionActive) {
       throw new Error('User is already unsubscribed.');
     }
